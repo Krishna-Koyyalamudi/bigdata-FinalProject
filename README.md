@@ -18,36 +18,36 @@ https://databricks-prod-cloudfront.cloud.databricks.com/public/4027ec902e239c93e
 
 # Commands
 ## Data Injection
-*
+* Python commands to import url library from the provided string url
 ```
 import urllib.request
 stringInURL = "https://www.gutenberg.org/files/1342/1342-0.txt"
 urllib.request.urlretrieve(stringInURL, "/tmp/krish.txt")
 ```
 
-*
+* Move data from file in the file system to file in databricks file system
 ```
 dbutils.fs.mv("file:/tmp/krish.txt", "dbfs:/data/PrideAndPrejudice.txt")
 ```
 
-*
+* Creating a Resilient distributed datasets
 ```
 PrideAndPrejudice_RDD = sc.textFile("dbfs:/data/PrideAndPrejudice.txt")
 ```
 
 ## Data Cleaning
-*
+* split the data based on the spaces in between after converting to lower case
 ```
 rawTextRDD = PrideAndPrejudice_RDD.flatMap(lambda line : line.lower().strip().split(" "))
 ```
 
-*
+* importing regular expression and executing a regex to eleiminate all the special Characters
 ```
 import re
 CleanRDD = rawTextRDD.map(lambda letter: re.sub(r'[^A-Za-z]', '', letter)
 ```
 
-*
+* Filtering stop words from the data
 ```
 from pyspark.ml.feature import StopWordsRemover
 remover = StopWordsRemover()
@@ -55,30 +55,30 @@ stopwords = remover.getStopWords()
 WordsRDD = CleanRDD.filter(lambda Word: Word not in stopwords)
 ```
 
-*
+* Lambda expression to filter out unnecessary spaces
 ```
 RemoveSpacesRDD = WordsRDD.filter(lambda x: x != "")
 ```
 
 ## Data Processing
-* 
+* Creating key value pairs
 ```
 KeyvaluePairsRDD = RemoveSpacesRDD.map(lambda word: (word,1))
 ```
 
-* 
+* Reducing by key i.e., the frequency of words
 ```
 wordCountRDD = KeyvaluePairsRDD.reduceByKey(lambda acc, value: acc + value)
 ```
 
-* 
+* Creating a map of words and display in reverse order of word count
 ```
 PrideAndPrejudiceResults = wordCountRDD.map(lambda x: (x[1], x[0])).sortByKey(False).take(10)
 print(PrideAndPrejudiceResults)
 ```
 
 ## Charting
-* We will be using Pandas, MatPlotLib, and Seaborn to visualize.
+* I have used Pandas, MatPlotLib, and Seaborn to visualize the data we attained.
 ```
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -99,14 +99,8 @@ sns.barplot(xlabel, ylabel, data=df, palette="Spectral").set_title(title)
 * To create a wordcloud, we will be needing nltk and wordcloud libraries.
 * Before using these libraries we need to install and download nltk, wordcloud and popular to over come name not defined and stopwords errors.
 ```
-pip install wordcloud
-```
-
-```
 pip install nltk
-```
-
-```
+pip install wordcloud
 nltk.download('popular')
 ```
 
